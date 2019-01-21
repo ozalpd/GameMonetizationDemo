@@ -29,7 +29,7 @@ namespace Pops.Controllers
         public delegate void LivesChange(int lives);
         public delegate void ScoreChange(int score);
 
-        //public delegate void PlayerMove(AbstractPlayerController player, Vector3 movement);
+        public delegate void PlayerMove(AbstractPlayerController player, Vector3 movement);
 
         public static GameState GameState
         {
@@ -272,20 +272,20 @@ namespace Pops.Controllers
             return SceneManager.LoadSceneAsync(sceneName, mode);
         }
 
-        //public static void PlayerMoving(AbstractPlayerController player, Vector3 movement)
-        //{
-        //    if (OnPlayerMoving != null)
-        //        OnPlayerMoving(player, movement);
-        //}
-        //public static event PlayerMove OnPlayerMoving;
-        ////public static event PlayerMove OnPlayerMoved;//
+        public static void PlayerMoving(AbstractPlayerController player, Vector3 movement)
+        {
+            if (OnPlayerMoving != null)
+                OnPlayerMoving(player, movement);
+        }
+        public static event PlayerMove OnPlayerMoving;
+        //public static event PlayerMove OnPlayerMoved;//
 
-        //public static void PlayerStopped(AbstractPlayerController player)
-        //{
-        //    if (OnPlayerStopped != null)
-        //        OnPlayerStopped(player, Vector3.zero);
-        //}
-        //public static event PlayerMove OnPlayerStopped;
+        public static void PlayerStopped(AbstractPlayerController player)
+        {
+            if (OnPlayerStopped != null)
+                OnPlayerStopped(player, Vector3.zero);
+        }
+        public static event PlayerMove OnPlayerStopped;
 
 
         public static void RestartLevel()
