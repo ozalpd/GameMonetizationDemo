@@ -7,7 +7,7 @@ using UnityEngine;
 public class ObstacleSpawner : MonoBehaviour
 {
     [Tooltip("The player")]
-    public Transform player;
+    public PlayerController player;
 
     [Tooltip("Reference objects to be spawn")]
     public GameObject[] references;
@@ -46,7 +46,7 @@ public class ObstacleSpawner : MonoBehaviour
 
         if (player != null)
         {
-            spawnPosition = Vector3.zero.With(z: player.position.z + horizonDistance);
+            spawnPosition = Vector3.zero.With(z: player.transform.position.z + horizonDistance);
         }
         else
         {
@@ -57,11 +57,18 @@ public class ObstacleSpawner : MonoBehaviour
     private void Update()
     {
         if (references != null && references.Length > 0
-            && player.DistanceTo(spawnPosition, true) < horizonDistance)
+            && player.transform.DistanceTo(spawnPosition, true) < horizonDistance)
         {
-            spawnPosition = spawnPosition.With(z: spawnPosition.z + RndGap());
-            ObjectPool.GetInstance(referId[GetNewRefIndex()], spawnPosition, Quaternion.identity);
+            SpawnObstacle();
         }
+    }
+
+    private void SpawnObstacle()
+    {
+        spawnPosition = spawnPosition.With(z: spawnPosition.z + RndGap());
+        var go = ObjectPool.GetInstance(referId[GetNewRefIndex()], spawnPosition, Quaternion.identity);
+        var obstacle = go.GetComponent<ObstacleController>();
+        obstacle.Player = player;
     }
 
     private float RndGap()

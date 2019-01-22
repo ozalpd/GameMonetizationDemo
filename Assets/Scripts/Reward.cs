@@ -1,22 +1,15 @@
 ﻿using Pops.Controllers;
+using System.Collections;
 using UnityEngine;
 
-public class Reward : MonoBehaviour
+public class Reward : ObstCollisionDetect
 {
     public int rewardPoint = 5;
 
-    private void OnTriggerEnter(Collider other)
-    {
-        CheckCollision(other.gameObject);
-    }
 
-    private void OnCollisionEnter(Collision collision)
+    protected override void CheckCollision(GameObject gameObject)
     {
-        CheckCollision(collision.gameObject);
-    }
-
-    private void CheckCollision(GameObject gameObject)
-    {
+        base.CheckCollision(gameObject);
         if (gameObject.tag.Equals("Player"))
             GameManager.Score += rewardPoint;
     }
