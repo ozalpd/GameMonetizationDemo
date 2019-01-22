@@ -7,9 +7,11 @@ public class PlayerController : MonoBehaviour
 {
     public float speed = 500f;
     public float horztSpeed = 20f;
+    public float hitDelay = 5f;
 
     private Rigidbody rbody;
     private Camera cameraMain;
+    private float hitTime = -1f;
 
     private void Start()
     {
@@ -29,11 +31,20 @@ public class PlayerController : MonoBehaviour
 #endif
         transform.position = Vector3.Lerp(transform.position, transform.position.With(x: xPos), horztSpeed);
         rbody.velocity = Vector3.forward * speed * Time.deltaTime;
+
+        if (transform.position.y > 0.55)
+        {
+            rbody.AddForce(Vector3.down * speed * Time.deltaTime);
+        }
+        else if (hitTime < 0 || Time.time > hitTime + hitDelay)
+        {
+            rbody.AddForce(Vector3.forward * speed * Time.deltaTime);
+        }
     }
     private float inputH, xPos;
 
-    //public float DistanceTo(Vector3 destination, bool ignoreY = false)
-    //{
-    //    return transform.DistanceTo(destination, ignoreY);
-    //}
+    public void OnObstacleHit()
+    {
+        hitTime = Time.time;
+    }
 }

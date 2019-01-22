@@ -5,8 +5,10 @@ using UnityEngine;
 /// <summary>
 /// Obstacle Collision Detection
 /// </summary>
-public class ObstCollisionDetect : MonoBehaviour
+public abstract class ObstCollisionDetect : MonoBehaviour
 {
+    public float releaseLatency = 2f;
+
     private AudioSource audioSource;
     private float audioDuration;
     private ObstacleController obstacle;
@@ -14,7 +16,7 @@ public class ObstCollisionDetect : MonoBehaviour
     private void Awake()
     {
         audioSource = GetComponent<AudioSource>();
-        audioDuration = audioSource != null ? audioSource.clip.length + 1f : 1f;
+        audioDuration = audioSource != null ? audioSource.clip.length + releaseLatency : releaseLatency;
 
         obstacle = GetComponent<ObstacleController>();
         if (obstacle == null)
@@ -22,12 +24,12 @@ public class ObstCollisionDetect : MonoBehaviour
     }
 
 
-    private void OnTriggerEnter(Collider other)
+    protected virtual void OnTriggerEnter(Collider other)
     {
         CheckCollision(other.gameObject);
     }
 
-    private void OnCollisionEnter(Collision collision)
+    protected virtual void OnCollisionEnter(Collision collision)
     {
         CheckCollision(collision.gameObject);
     }
@@ -40,11 +42,14 @@ public class ObstCollisionDetect : MonoBehaviour
             {
                 audioSource.Play();
             }
+
+            OnPlayerCollision(gameObject.GetComponent<PlayerController>());
             StartCoroutine(Release());
         }
     }
+    public abstract void OnPlayerCollision(PlayerController player);
 
-    private IEnumerator Release()
+    protected IEnumerator Release()
     {
         yield return new WaitForSeconds(audioDuration);
         obstacle.Release();

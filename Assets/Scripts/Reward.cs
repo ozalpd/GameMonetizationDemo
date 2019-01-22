@@ -6,11 +6,8 @@ public class Reward : ObstCollisionDetect
 {
     public int rewardPoint = 5;
 
-
-    protected override void CheckCollision(GameObject gameObject)
+    public override void OnPlayerCollision(PlayerController player)
     {
-        base.CheckCollision(gameObject);
-        if (gameObject.tag.Equals("Player"))
-            GameManager.Score += rewardPoint;
+        GameManager.Score += rewardPoint;
     }
 }
