@@ -7,36 +7,92 @@ namespace Pops.Controllers
     {
         public AudioMixer mixer;
 
+        [SerializeField]
+        private AudioSource bGMusic;
+
+        public const string VolMusic = "VolumeMusic";
+        public const string VolSFX = "VolumeSFX";
+
+        private float minVolume = 0.0000025f;
+
+        public void Awake()
+        {
+            if (bGMusic == null)
+                bGMusic = GetComponent<AudioSource>();
+            if (bGMusic != null)
+                bGMusic.loop = true;
+        }
+
         private void Start()
         {
-            setMixerVolume("VolumeMusic", GameSettings.MusicVolume);
-            setMixerVolume("VolumeSFX", GameSettings.SfxVolume);
+            setMixerVolume(VolMusic, AudioSettings.MusicVolume);
+            setMixerVolume(VolSFX, AudioSettings.SfxVolume);
 
-            GameSettings.MusicVolumeChanged += MusicVolumeChanged;
-            GameSettings.SfxVolumeChanged += SfxVolumeChanged;
+            AudioSettings.MusicVolumeChanged += Settings_MusicVolumeChanged;
+            AudioSettings.SfxVolumeChanged += Settings_SfxVolumeChanged;
+
+            GameManager.GameStateChanged += GameManager_StateChanged;
         }
 
         private void OnDestroy()
         {
-            GameSettings.SfxVolumeChanged -= SfxVolumeChanged;
-            GameSettings.MusicVolumeChanged -= MusicVolumeChanged;
+            AudioSettings.SfxVolumeChanged -= Settings_SfxVolumeChanged;
+            AudioSettings.MusicVolumeChanged -= Settings_MusicVolumeChanged;
+            GameManager.GameStateChanged -= GameManager_StateChanged;
         }
 
-        private void MusicVolumeChanged(float volume)
+        private void GameManager_StateChanged(GameState gameState)
         {
-            setMixerVolume("VolumeMusic", volume);
+            bool pauseMusic = false;
+            switch (gameState)
+            {
+                case GameState.Running:
+                    break;
+                case GameState.Paused:
+                    pauseMusic = true;
+                    break;
+                case GameState.Failed:
+                    //TODO: play fail music
+                    break;
+                case GameState.Succeeded:
+                    //TODO: play success music
+                    break;
+                default:
+                    break;
+            }
+            if (pauseMusic && bGMusic != null)
+            {
+                bGMusic.Pause();
+            }
+            else if (AudioSettings.MusicVolume > minVolume && bGMusic != null)
+            {
+                bGMusic.UnPause();
+            }
         }
 
-        private void SfxVolumeChanged(float volume)
+        private void Settings_MusicVolumeChanged(float volume)
         {
-            setMixerVolume("VolumeSFX", volume);
+            setMixerVolume(VolMusic, volume);
+        }
+
+        private void Settings_SfxVolumeChanged(float volume)
+        {
+            setMixerVolume(VolSFX, volume);
         }
 
 
         private void setMixerVolume(string mixerName, float volume)
         {
-            if (!(volume > 0))
-                volume = 0.0000025f;
+            if (volume < minVolume)
+            {
+                volume = minVolume;
+                if (bGMusic != null && mixerName.Equals(VolMusic))
+                    bGMusic.Pause();
+            }
+            else if (volume > minVolume && bGMusic != null && mixerName.Equals(VolMusic))
+            {
+                bGMusic.UnPause();
+            }
             float dbVol = 20 * Mathf.Log10(volume);
             mixer.SetFloat(mixerName, dbVol);
         }

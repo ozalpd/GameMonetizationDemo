@@ -59,14 +59,14 @@ namespace Pops.Controllers.UI
 
         public float MusicVolume
         {
-            get { return GameSettings.MusicVolume; }
-            set { GameSettings.MusicVolume = value; }
+            get { return AudioSettings.MusicVolume; }
+            set { AudioSettings.MusicVolume = value; }
         }
 
         public float SfxVolume
         {
-            get { return GameSettings.SfxVolume; }
-            set { GameSettings.SfxVolume = value; }
+            get { return AudioSettings.SfxVolume; }
+            set { AudioSettings.SfxVolume = value; }
         }
 
         private void Awake()
