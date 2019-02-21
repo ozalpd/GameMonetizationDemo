@@ -35,7 +35,5 @@ public class TrackPart : MonoBehaviour
     {
         if (other.tag.Equals("Player"))
             CurrentPart = this;
-
-        Debug.Log("Collision with" + other.tag);
     }
 }

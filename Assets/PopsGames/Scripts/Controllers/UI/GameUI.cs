@@ -41,7 +41,9 @@ namespace Pops.Controllers.UI
         [Header("Menu Items")]
         public Button pauseButton;
         public Button resumeButton;
+        public Image failureMenu;
         public Image pauseMenu;
+        public Image successMenu;
         public TextMeshProUGUI gameStateText;
 
         [Header("Settings")]
@@ -302,6 +304,12 @@ namespace Pops.Controllers.UI
             if (pauseMenu != null)
                 pauseMenu.gameObject.SetActive(false);
 
+            if (failureMenu != null)
+                failureMenu.gameObject.SetActive(false);
+
+            if (successMenu != null)
+                successMenu.gameObject.SetActive(false);
+
             while (!loadState.isDone)
             {
                 //float progress = Mathf.Clamp01(loadState.progress / 0.9f);
@@ -350,7 +358,11 @@ namespace Pops.Controllers.UI
             if (resumeButton != null)
                 resumeButton.gameObject.SetActive(gameState == GameState.Paused);
             if (pauseMenu != null)
-                pauseMenu.gameObject.SetActive(gameState != GameState.Running);
+                pauseMenu.gameObject.SetActive(gameState == GameState.Paused);
+            if (failureMenu != null)
+                failureMenu.gameObject.SetActive(gameState == GameState.Failed);
+            if (successMenu != null)
+                successMenu.gameObject.SetActive(gameState == GameState.Succeeded);
         }
     }
 }

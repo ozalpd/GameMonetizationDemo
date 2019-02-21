@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 1504612932}
   - component: {fileID: 1504612931}
   - component: {fileID: 1504612933}
-  - component: {fileID: 1504612930}
+  - component: {fileID: 8813418193438420221}
   - component: {fileID: 5270452347648696471}
   - component: {fileID: 7833708624427013677}
   m_Layer: 0
@@ -80,20 +80,19 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
---- !u!64 &1504612930
-MeshCollider:
+--- !u!135 &8813418193438420221
+SphereCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1504612929}
-  m_Material: {fileID: 13400000, guid: ca37ff120148a411badbed30c5a88504, type: 2}
+  m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_Enabled: 1
-  serializedVersion: 3
-  m_Convex: 0
-  m_CookingOptions: 14
-  m_Mesh: {fileID: 4300000, guid: afa694c33c56f4a6ba6fdbf667b3de4d, type: 3}
+  serializedVersion: 2
+  m_Radius: 1.0000002
+  m_Center: {x: 0, y: 0, z: -0.5}
 --- !u!114 &5270452347648696471
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -107,6 +106,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   releaseLatency: 3
+  damageFactor: 15
 --- !u!82 &7833708624427013677
 AudioSource:
   m_ObjectHideFlags: 0
