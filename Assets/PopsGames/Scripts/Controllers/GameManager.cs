@@ -1,7 +1,9 @@
 ﻿using Pops.GameObjects.Tools;
 using Pops.Helpers;
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Timers;
 using UnityEngine;
 using UnityEngine.Internal;
 using UnityEngine.SceneManagement;
@@ -25,6 +27,7 @@ namespace Pops.Controllers
 
         public delegate void GameStateChange(GameState gameState);
 
+        public delegate void InvulnerabilityChange(bool invulnerable);
         public delegate void ProgressChange(float progress, float maxValue);
         public delegate void LivesChange(int lives);
         public delegate void ScoreChange(int score);
@@ -80,7 +83,7 @@ namespace Pops.Controllers
             get { return _damage; }
             set
             {
-                if (!Mathf.Approximately(_damage, value))
+                if (!(Invulnerable && value > _damage) && !Mathf.Approximately(_damage, value))
                 {
                     _damage = value < MaxDamage ? value > 0 ? value : 0f : MaxDamage;
                     if (Mathf.Approximately(_damage, MaxDamage))
@@ -89,11 +92,10 @@ namespace Pops.Controllers
                         if (GameState != GameState.Failed)
                         {
                             _damage = 0;
-                            Health = MaxHealth;
+                            _health = MaxHealth;
                         }
                     }
-                    if (DamageChanged != null)
-                        DamageChanged(_damage, MaxDamage);
+                    SparkHealthDamageEvents();
                 }
             }
         }
@@ -111,7 +113,8 @@ namespace Pops.Controllers
             }
             set
             {
-                if (!Mathf.Approximately(_health.Value, value))
+                if (!(Invulnerable && (_health ?? MaxHealth) > value)
+                   && !Mathf.Approximately(_health.Value, value))
                 {
                     _health = value < MaxHealth ? value > 0 ? value : 0f : MaxHealth;
                     if (Mathf.Approximately(_health.Value, 0))
@@ -120,18 +123,39 @@ namespace Pops.Controllers
                         if (GameState != GameState.Failed)
                         {
                             _health = MaxHealth;
-                            Damage = 0;
+                            _damage = 0;
                         }
                     }
-
-                    if (HealthChanged != null)
-                        HealthChanged(_health.Value, MaxHealth);
+                    SparkHealthDamageEvents();
                 }
             }
         }
         private static float? _health;
         public static event ProgressChange HealthChanged;
 
+        private static void SparkHealthDamageEvents()
+        {
+            if (HealthChanged != null)
+                HealthChanged(_health.Value, MaxHealth);
+            if (DamageChanged != null)
+                DamageChanged(_damage, MaxDamage);
+        }
+
+        public static bool Invulnerable
+        {
+            get { return _invulnerable; }
+            set
+            {
+                if (_invulnerable != value)
+                {
+                    _invulnerable = value;
+                    if (InvulnerabilityChanged != null)
+                        InvulnerabilityChanged(_invulnerable);
+                }
+            }
+        }
+        private static bool _invulnerable;
+        public static event InvulnerabilityChange InvulnerabilityChanged;
 
 
         public static float LevelProgress
@@ -310,6 +334,7 @@ namespace Pops.Controllers
             DamageChanged = null;
             HealthChanged = null;
             HighScoreChanged = null;
+            InvulnerabilityChanged = null;
             LivesChanged = null;
             //OnPlayerMoving = null;
             ScoreChanged = null;
@@ -332,7 +357,7 @@ namespace Pops.Controllers
 
             //TODO: Find objects which should be reset
 
-            var savedTransforms = Object.FindObjectsOfType<SaveTransform>();
+            var savedTransforms = UnityEngine.Object.FindObjectsOfType<SaveTransform>();
             foreach (var t in savedTransforms)
             {
                 if (t.IsSaved)

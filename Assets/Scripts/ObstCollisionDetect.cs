@@ -13,7 +13,7 @@ public abstract class ObstCollisionDetect : MonoBehaviour
     private float audioDuration;
     private ObstacleController obstacle;
 
-    private void Awake()
+    protected virtual void Awake()
     {
         audioSource = GetComponent<AudioSource>();
         audioDuration = audioSource != null ? audioSource.clip.length + releaseLatency : releaseLatency;

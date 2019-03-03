@@ -135,8 +135,10 @@ namespace Pops.Controllers.UI
             if (loadScreen != null)
                 loadScreen.SetActive(false);
 
+            GameManager.InvulnerabilityChanged += GameManager_InvulnerabilityChanged;
+
             //updateUI(GameManager.GameState);
-            GameManager.GameStateChanged += updateUI;
+            GameManager.GameStateChanged += UpdateUI;
             GameManager.GameState = GameState.Running;
 
             if (musicVolumeSlider != null)
@@ -152,7 +154,7 @@ namespace Pops.Controllers.UI
             {
                 case BossCountDown:
                     if (bossTickerText != null)
-                        StartCoroutine(TurnOffBossCountDown(1.2f));
+                        StartCoroutine(TurnOffCountDown(1.2f));
                     break;
 
                 default:
@@ -177,7 +179,7 @@ namespace Pops.Controllers.UI
             }
         }
 
-        private IEnumerator TurnOffBossCountDown(float blink)
+        private IEnumerator TurnOffCountDown(float blink)
         {
             if (bossTickerText != null)
             {
@@ -220,6 +222,17 @@ namespace Pops.Controllers.UI
             if (healthText != null)
                 healthText.text = health.ToString("00");
         }
+
+        private void GameManager_InvulnerabilityChanged(bool invulnerable)
+        {
+            if(invulnerable)
+                Debug.Log("Invulnerable!");
+            else
+                Debug.Log("Vulnerable!");
+
+            //TODO: Connect this to UI
+        }
+
 
         private void OnLevelProgressChanged(float progress, float maxValue)
         {
@@ -269,6 +282,26 @@ namespace Pops.Controllers.UI
                                 : string.Format("HIGH SCORE: {0}", GameManager.HighScore);
         }
 
+        private IEnumerator InvulnerableFor(float duration)
+        {
+            GameManager.Invulnerable = true;
+            float start = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup < start + duration)
+            {
+                yield return null;
+            }
+            GameManager.Invulnerable = false;
+        }
+
+        public void MakeAnExtraLife()
+        {
+            //TODO: Connect this to an AdsController
+            GameManager.Lives++;
+            StartCoroutine(InvulnerableFor(duration: 2.5f));
+            StartCoroutine(ResumeAfter(duration: 1f));
+            GameManager.Damage = 0;
+        }
+
         public void PauseGame()
         {
             GameManager.GameState = GameState.Paused;
@@ -277,6 +310,28 @@ namespace Pops.Controllers.UI
         public void RestartLevel()
         {
             StartCoroutine(RestartLevelAsync());
+        }
+
+        private IEnumerator ResumeAfter(float duration)
+        {
+            UpdateUI(GameState.Running);
+
+            //yield return new WaitForSeconds(duration);
+            //since TimeScale is zero upper line will wait forever
+            //so we need a solution that stands for real time
+            float start = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup < start + duration)
+            {
+                yield return null;
+            }
+
+            GameManager.GameState = GameState.Running;
+            yield return null;
+        }
+
+        public void ResumeGame()
+        {
+            StartCoroutine(ResumeAfter(duration: 0.5f));
         }
 
         public void DisplayLevels()
@@ -320,12 +375,7 @@ namespace Pops.Controllers.UI
             }
         }
 
-        public void ResumeGame()
-        {
-            GameManager.GameState = GameState.Running;
-        }
-
-        private void updateUI(GameState gameState)
+        private void UpdateUI(GameState gameState)
         {
             switch (gameState)
             {
