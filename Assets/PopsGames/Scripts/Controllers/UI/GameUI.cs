@@ -1,12 +1,16 @@
 ﻿using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Advertisements;
 using UnityEngine.UI;
 
 namespace Pops.Controllers.UI
 {
     public class GameUI : MonoBehaviour
     {
+        [SerializeField]
+        private AdsController adsController;
+
         [Header("HUD")]
         public TextMeshProUGUI healthText;
         public TextMeshProUGUI livesText;
@@ -39,6 +43,7 @@ namespace Pops.Controllers.UI
         public TextMeshProUGUI progressText;
 
         [Header("Menu Items")]
+        public Button extraLifeAdButton;
         public Button pauseButton;
         public Button resumeButton;
         public Image failureMenu;
@@ -58,6 +63,7 @@ namespace Pops.Controllers.UI
         /// TickerName of NumericTicker for count down of BossFight mode.
         /// </summary>
         public const string BossCountDown = "BossCountDown";
+
 
         public float MusicVolume
         {
@@ -81,6 +87,9 @@ namespace Pops.Controllers.UI
 
             if (progressSlider != null)
                 _imgProgressFillArea = progressSlider.fillRect.GetComponent<Image>();
+
+            if (adsController == null)
+                adsController = FindObjectOfType<AdsController>();
         }
 
         private void Start()
@@ -225,7 +234,7 @@ namespace Pops.Controllers.UI
 
         private void GameManager_InvulnerabilityChanged(bool invulnerable)
         {
-            if(invulnerable)
+            if (invulnerable)
                 Debug.Log("Invulnerable!");
             else
                 Debug.Log("Vulnerable!");
@@ -295,7 +304,34 @@ namespace Pops.Controllers.UI
 
         public void MakeAnExtraLife()
         {
-            //TODO: Connect this to an AdsController
+            if (adsController.CanShowRewardedAd)
+                adsController.ShowExtraLifeAd(OnExtraLifeAdResult);
+        }
+
+        private void OnExtraLifeAdResult(ShowResult result)
+        {
+            switch (result)
+            {
+                case ShowResult.Finished:
+                    GrantExtraLife();
+                    break;
+
+                case ShowResult.Skipped:
+                    RestartLevel();
+                    Debug.Log("The ad was skipped before reaching the end.");
+                    break;
+
+                case ShowResult.Failed:
+                    if (adsController.HasRewardedAdShown)
+                        GrantExtraLife();
+                    else
+                        Debug.LogError("The ad failed to be shown.");
+                    break;
+            }
+        }
+
+        private void GrantExtraLife()
+        {
             GameManager.Lives++;
             StartCoroutine(InvulnerableFor(duration: 2.5f));
             StartCoroutine(ResumeAfter(duration: 1f));
@@ -316,9 +352,9 @@ namespace Pops.Controllers.UI
         {
             UpdateUI(GameState.Running);
 
+            //since TimeScale is zero this line will wait forever
             //yield return new WaitForSeconds(duration);
-            //since TimeScale is zero upper line will wait forever
-            //so we need a solution that stands for real time
+
             float start = Time.realtimeSinceStartup;
             while (Time.realtimeSinceStartup < start + duration)
             {
@@ -411,6 +447,9 @@ namespace Pops.Controllers.UI
                 pauseMenu.gameObject.SetActive(gameState == GameState.Paused);
             if (failureMenu != null)
                 failureMenu.gameObject.SetActive(gameState == GameState.Failed);
+            if (extraLifeAdButton != null)
+                extraLifeAdButton.gameObject.SetActive(adsController != null && adsController.CanShowExtraLifeAd);
+
             if (successMenu != null)
                 successMenu.gameObject.SetActive(gameState == GameState.Succeeded);
         }
