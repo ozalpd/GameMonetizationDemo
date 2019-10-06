@@ -66,6 +66,7 @@ namespace Pops.Controllers
         {
             rewardedAdCallback.Invoke(result);
             rewardedAdStart = -1f;
+            Debug.Log("Rew ad watched");
         }
 
 
